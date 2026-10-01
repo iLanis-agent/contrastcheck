@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ContrastCheck - WCAG color contrast</title>
+<style>
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; background:#14181f; color:#e8edf4; line-height:1.5; }
+  .wrap { max-width:660px; margin:0 auto; padding:26px 18px 60px; }
+  a { color:#7cf0c8; } h1 { font-size:28px; } h1 span { color:#7cf0c8; } .sub { color:#9aa6b6; margin:4px 0 18px; }
+  .card { background:#1e2530; border-radius:14px; padding:16px; margin-bottom:14px; }
+  label { display:block; font-size:13px; color:#9aa6b6; margin:10px 0 4px; }
+  .row { display:flex; gap:10px; } .row > div { flex:1; }
+  .pick { display:flex; gap:8px; } .pick input[type=color] { width:48px; height:44px; padding:2px; border-radius:9px; border:1px solid #3a4658; background:#14181f; flex:none; }
+  input[type=text] { width:100%; padding:11px; border-radius:9px; border:1px solid #3a4658; background:#14181f; color:#e8edf4; font-size:16px; font-family:ui-monospace,Menlo,monospace; }
+  input.bad { border-color:#e0746a; }
+  .preview { border-radius:12px; padding:18px; margin-top:12px; } .preview .l { font-size:24px; font-weight:700; } .preview .s { font-size:16px; margin-top:4px; }
+  .big { font-size:46px; font-weight:800; color:#7cf0c8; } .lbl { font-size:13px; color:#9aa6b6; }
+  table { width:100%; border-collapse:collapse; margin-top:8px; } td { padding:9px 4px; border-top:1px solid #2c3646; font-size:15px; } td.r { text-align:right; font-weight:700; }
+  .pass { color:#7cf0c8; } .fail { color:#ff8a7e; }
+  .note { font-size:14px; color:#c8d2de; margin-top:10px; } h2 { font-size:17px; margin-bottom:8px; } .small { font-size:13px; color:#9aa6b6; }
+  button { margin-top:8px; padding:9px 14px; border-radius:9px; border:1px solid #3a4658; background:#14181f; color:#e8edf4; font-size:14px; cursor:pointer; margin-right:6px; }
+  .sw { display:inline-block; width:14px; height:14px; border-radius:4px; vertical-align:-2px; margin-right:6px; border:1px solid #556; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Contrast<span>Check</span></h1>
+  <div class="sub">Is your text readable enough? Check two colors against the WCAG levels, and get the nearest color that passes.</div>
+  <div class="card">
+    <div class="row">
+      <div><label for="fgt">Text color</label><div class="pick"><input type="color" id="fgc" value="#777777"><input type="text" id="fgt" value="#777777" maxlength="7" autocomplete="off"></div></div>
+      <div><label for="bgt">Background color</label><div class="pick"><input type="color" id="bgc" value="#ffffff"><input type="text" id="bgt" value="#ffffff" maxlength="7" autocomplete="off"></div></div>
+    </div>
+    <div><button id="swap">Swap</button><button data-fg="#767676" data-bg="#ffffff">Lightest gray that passes</button><button data-fg="#000000" data-bg="#ffffff">Black on white</button><button data-fg="#ffffff" data-bg="#f4b400">White on amber</button></div>
+    <div class="preview" id="prev"><div class="l">Large sample text</div><div class="s">Normal sample text, the size most body copy uses.</div></div>
+  </div>
+  <div class="card" id="res"></div>
+  <div class="card"><h2>About this</h2><div class="small">Relative luminance and contrast ratio follow the <a href="https://www.w3.org/WAI/WCAG21/Understanding/contrast-minimum.html">W3C WCAG 2.1 definition</a>. Thresholds are exact: W3C says 4.499:1 does not meet 4.5:1, so the ratio is shown truncated, never rounded up. Large text means 18 point (24px) or 14 point (about 18.7px) bold. Runs in your browser, nothing is sent anywhere.</div></div>
+</div>
+<script src="engine.js"></script>
+<script>
+var $ = function (i) { return document.getElementById(i); };
+function sync(from, to) { $(to).value = $(from).value; }
+function render() {
+  var fg = WC.parseHex($('fgt').value), bg = WC.parseHex($('bgt').value);
+  $('fgt').className = fg ? '' : 'bad'; $('bgt').className = bg ? '' : 'bad';
+  if (!fg || !bg) { $('res').innerHTML = '<div class="note" id="err">Enter colors as hex, like #1a2b3c or #fff.</div>'; return; }
+  $('fgc').value = WC.toHex(fg); $('bgc').value = WC.toHex(bg);
+  $('prev').style.background = WC.toHex(bg); $('prev').style.color = WC.toHex(fg);
+  var r = WC.ratio(fg, bg), v = WC.verdicts(r), h = '<div class="lbl">Contrast ratio</div><div class="big" id="ratio">' + WC.fmtRatio(r) + '</div><table>';
+  Object.keys(WC.LEVELS).forEach(function (k) { h += '<tr><td>' + k + ' <span class="small">(needs ' + WC.LEVELS[k] + ':1)</span></td><td class="r ' + (v[k] ? 'pass' : 'fail') + '" data-k="' + k + '">' + (v[k] ? 'Pass' : 'Fail') + '</td></tr>'; });
+  h += '</table>';
+  var need = !v['AA normal text'] ? 4.5 : !v['AAA normal text'] ? 7 : 0;
+  if (need) {
+    var f = WC.fixForeground(fg, bg, need);
+    if (f && f.changed) h += '<div class="note" id="fix">Nearest text color that reaches ' + need + ':1 on this background: <span class="sw" style="background:' + WC.toHex(f.rgb) + '"></span><b>' + WC.toHex(f.rgb) + '</b> (' + WC.fmtRatio(WC.ratio(f.rgb, bg)) + ') <button id="apply" data-hex="' + WC.toHex(f.rgb) + '">Use it</button></div>';
+    else if (!f) h += '<div class="note" id="fix">No text color can reach ' + need + ':1 on this background. Change the background.</div>';
+  } else h += '<div class="note" id="fix">Passes every text level, including AAA.</div>';
+  $('res').innerHTML = h;
+  var a = $('apply'); if (a) a.onclick = function () { $('fgt').value = a.getAttribute('data-hex'); render(); };
+}
+$('fgt').oninput = $('bgt').oninput = render;
+$('fgc').oninput = function () { sync('fgc', 'fgt'); render(); }; $('bgc').oninput = function () { sync('bgc', 'bgt'); render(); };
+$('swap').onclick = function () { var t = $('fgt').value; $('fgt').value = $('bgt').value; $('bgt').value = t; render(); };
+Array.prototype.forEach.call(document.querySelectorAll('button[data-fg]'), function (b) { b.onclick = function () { $('fgt').value = b.getAttribute('data-fg'); $('bgt').value = b.getAttribute('data-bg'); render(); }; });
+render();
+</script>
+</body>
+</html>

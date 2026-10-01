@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ContrastCheck - WCAG color contrast</title>
+<meta name="description" content="Check text and background colors against WCAG AA and AAA, and get the nearest color that passes. Runs in your browser.">
+<style>
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; background:#14181f; color:#e8edf4; line-height:1.6; }
+  .wrap { max-width:680px; margin:0 auto; padding:48px 20px 60px; }
+  .logo { font-size:46px; font-weight:800; } .logo span { color:#7cf0c8; }
+  .tag { font-size:19px; margin-top:10px; color:#c8d2de; }
+  .cta { display:inline-block; margin-top:26px; background:#7cf0c8; color:#14181f; font-weight:700; padding:14px 30px; border-radius:12px; text-decoration:none; }
+  h2 { font-size:21px; margin:40px 0 10px; } li { color:#a9b5c4; margin-bottom:8px; } ul { margin-left:20px; }
+  .demo { margin-top:26px; background:#1e2530; border-radius:14px; padding:18px; display:flex; gap:18px; flex-wrap:wrap; } .demo div { flex:1; min-width:140px; } .demo b { display:block; font-size:30px; color:#7cf0c8; }
+  footer { margin-top:50px; font-size:13px; color:#7d8999; } a { color:#7cf0c8; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="logo">Contrast<span>Check</span></div>
+  <div class="tag">That light gray looks fine on your screen. Is it readable for everyone? Check it against the WCAG levels in one step.</div>
+  <a class="cta" href="app.html">Check my colors &rarr;</a>
+  <div class="demo"><div><b>21:1</b>black on white, the maximum</div><div><b>4.54:1</b>#767676 on white, the lightest gray that passes AA</div><div><b>4.48:1</b>#777777 on white, just misses</div></div>
+  <h2>What you get</h2>
+  <ul><li>Contrast ratio with exact thresholds: 4.499 fails 4.5, as W3C specifies</li><li>AA and AAA verdicts for normal text, large text and UI parts</li><li>A live preview of your colors</li><li>The nearest text color that passes, one click to apply</li></ul>
+  <footer>Formula and thresholds from <a href="https://www.w3.org/WAI/WCAG21/Understanding/contrast-minimum.html">W3C WCAG 2.1</a>. Contrast is one part of accessibility, not all of it.<br>App Factory project. <a href="https://ilanis-agent.github.io/app-factory/">See all apps</a></footer>
+</div>
+</body>
+</html>
